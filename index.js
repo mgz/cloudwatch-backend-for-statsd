@@ -19,10 +19,24 @@ function CloudwatchBackend(startupTime, config, emitter) {
 exports.CloudwatchBackend = CloudwatchBackend;
 
 function processKey(key) {
-  var parts = key.split(/[\.\/-]/);
+  var parts = key.split('--');
+  var namesParts = parts[0].split(/[\.\/]/);
+  var dimensionsStrs = parts.length > 1 ? parts.splice(1, parts.length) : [];
+  var dimensions = [];
+  for (var i in dimensionsStrs) {
+    var dimParts = dimensionsStrs[i].split(/[\.\/]/);
+    if (dimParts.length > 1) {
+      dimensions.push({
+        Name: dimParts.splice(0, dimParts.length - 1).join('/'),
+        Value: dimParts[dimParts.length - 1]
+      });
+    }
+  };
+
   return {
-    metricName: parts[parts.length - 1],
-    namespace: parts.length > 1 ? parts.splice(0, parts.length - 1).join("/") : null,
+    metricName: namesParts[namesParts.length - 1],
+    namespace: namesParts.length > 1 ? namesParts.splice(0, namesParts.length - 1).join('/') : null,
+    dimensions: dimensions.length > 0 ? dimensions : undefined
   };
 }
 exports.processKey = processKey;
@@ -81,15 +95,17 @@ function createCounterMetrics(metrics, config, timestamp) {
       continue;
     }
 
-    var names = config.processKeyForNamespace ? processKey(key) : {};
+    var names = config.processKeyForNames ? processKey(key) : {};
     var namespace = names.namespace || config.namespace || "AwsCloudWatchStatsdBackend";
     var metricName = config.metricName || names.metricName || key;
+    var dimensions = config.dimensions || names.dimensions || undefined;
 
     if (_.isNil(currentCounterMetrics[namespace])) {
       currentCounterMetrics[namespace] = [];
     }
     currentCounterMetrics[namespace].push({
       MetricName: metricName,
+      Dimensions: dimensions,
       Unit: "Count",
       Timestamp: new Date(timestamp * 1000).toISOString(),
       Value: metrics[key],
@@ -122,9 +138,10 @@ function createTimerMetrics(metrics, config, timestamp) {
 
       var sum = cumulativeValues[count - 1];
 
-      var names = config.processKeyForNamespace ? processKey(key) : {};
+      var names = config.processKeyForNames ? processKey(key) : {};
       var namespace = names.namespace || config.namespace || "AwsCloudWatchStatsdBackend";
       var metricName = config.metricName || names.metricName || key;
+      var dimensions = config.dimensions || names.dimensions || undefined;
 
       if (_.isNil(currentTimerMetrics[namespace])) {
         currentTimerMetrics[namespace] = [];
@@ -132,6 +149,7 @@ function createTimerMetrics(metrics, config, timestamp) {
 
       currentTimerMetrics[namespace].push({
         MetricName: metricName,
+        Dimensions: dimensions,
         Unit: "Milliseconds",
         Timestamp: new Date(timestamp * 1000).toISOString(),
         StatisticValues: {
@@ -155,14 +173,16 @@ function createGaugeMetrics(metrics, config, timestamp) {
       continue;
     }
 
-    var names = config.processKeyForNamespace ? processKey(key) : {};
+    var names = config.processKeyForNames ? processKey(key) : {};
     namespace = names.namespace || config.namespace || "AwsCloudWatchStatsdBackend";
     var metricName = config.metricName || names.metricName || key;
+    var dimensions = config.dimensions || names.dimensions || undefined;
 
     if (_.isNil(currentGaugeMetrics[namespace])) currentGaugeMetrics[namespace] = [];
 
     currentGaugeMetrics[namespace].push({
       MetricName: metricName,
+      Dimensions: dimensions,
       Unit: "None",
       Timestamp: new Date(timestamp * 1000).toISOString(),
       Value: metrics[key],
@@ -180,13 +200,15 @@ function createSetMetrics(metrics, config, timestamp) {
       continue;
     }
 
-    var names = config.processKeyForNamespace ? processKey(key) : {};
+    var names = config.processKeyForNames ? processKey(key) : {};
     var namespace = names.namespace || config.namespace || "AwsCloudWatchStatsdBackend";
     var metricName = config.metricName || names.metricName || key;
+    var dimensions = config.dimensions || names.dimensions || undefined;
 
     if (_.isNil(currentSetMetrics[namespace])) currentSetMetrics[namespace] = [];
     currentSetMetrics[namespace].push({
       MetricName: metricName,
+      Dimensions: dimensions,
       Unit: "None",
       Timestamp: new Date(timestamp * 1000).toISOString(),
       Value: metrics[key].values().length,

@@ -78,33 +78,34 @@ The cloudwatch backend provides ways to override the name and namespace by cofig
 The following overrides the default and any provided namespace or metric name with the specified.
 
     {
-        backends: [ "cloudwatch-backend-for-statsd" ],
-        cloudwatch: 
+        backends: [ "aws-cloudwatch-statsd-backend" ],
+        cloudwatch:
         {
-            accessKeyId: 'YOUR_ACCESS_KEY_ID', 
-            secretAccessKey: 'YOUR_SECRET_ACCESS_KEY', 
+            accessKeyId: 'YOUR_ACCESS_KEY_ID',
+            secretAccessKey: 'YOUR_SECRET_ACCESS_KEY',
             region: 'YOUR_REGION',
-            namespace: 'App/Controller/Action', 
-            metricName: 'Request'
+            namespace: 'App/Controller/Action',
+            metricName: 'Request',
+            dimensions: [{ Name: 'InstanceId', Value: 'i-123' }]
         }
     }
 
-Using the option *processKeyForNamespace* (default is false) you can parse the bucket name for namespace in addition to metric name. The backend will use the last component of a bucket name comprised of slash (/), dot (.) or dash (-) separated parts as the metric name. The remaining leading parts will be used as namespace. Separators will be replaced with slashes (/).
+Using the option *processKeyForNames* (default is false) you can parse the bucket name for namespace in addition to metric name. The backend will use the last component of a bucket name comprised of slash (/), dot (.) or dash (-) separated parts as the metric name. The remaining leading parts will be used as namespace. Separators will be replaced with slashes (/).
 
     {
-        backends: [ "cloudwatch-backend-for-statsd" ],
-        cloudwatch: 
+        backends: [ "aws-cloudwatch-statsd-backend" ],
+        cloudwatch:
         {
-            accessKeyId: 'YOUR_ACCESS_KEY_ID', 
-            secretAccessKey: 'YOUR_SECRET_ACCESS_KEY', 
+            accessKeyId: 'YOUR_ACCESS_KEY_ID',
+            secretAccessKey: 'YOUR_SECRET_ACCESS_KEY',
             region: 'YOUR_REGION',
-            processKeyForNamespace:true
+            processKeyForNames:true
         }
     }
 
 For example, sending StatsD the following
 
-    App.Controller.Action.Request:1|c
+    App.Controller.Action.Request--InstanceId.i-123:1|c
 
 will produce the equivalent to the former configuration example. Note that both will be suppressed if overriden as in the former configuration example.
 
