@@ -111,7 +111,7 @@ function createCounterMetrics(metrics, config, timestamp) {
       Value: metrics[key],
     });
   }
-  console.log("Counter metrics created : " + JSON.stringify(currentCounterMetrics));
+  // console.log("Counter metrics created : " + JSON.stringify(currentCounterMetrics));
   return currentCounterMetrics;
 }
 exports.createCounterMetrics = createCounterMetrics;
@@ -161,7 +161,7 @@ function createTimerMetrics(metrics, config, timestamp) {
       });
     }
   }
-  console.log("Timer metrics created : " + JSON.stringify(currentTimerMetrics));
+  // console.log("Timer metrics created : " + JSON.stringify(currentTimerMetrics));
   return currentTimerMetrics;
 }
 exports.createTimerMetrics = createTimerMetrics;
@@ -188,7 +188,7 @@ function createGaugeMetrics(metrics, config, timestamp) {
       Value: metrics[key],
     });
   }
-  console.log("Gauge metrics created : " + JSON.stringify(currentGaugeMetrics));
+  // console.log("Gauge metrics created : " + JSON.stringify(currentGaugeMetrics));
   return currentGaugeMetrics;
 }
 exports.createGaugeMetrics = createGaugeMetrics;
@@ -214,13 +214,13 @@ function createSetMetrics(metrics, config, timestamp) {
       Value: metrics[key].values().length,
     });
   }
-  console.log("Set metrics created : " + JSON.stringify(currentSetMetrics));
+  // console.log("Set metrics created : " + JSON.stringify(currentSetMetrics));
   return currentSetMetrics;
 }
 exports.createSetMetrics = createSetMetrics;
 
 function flush(timestamp, metrics, cloudwatchApi, config) {
-  console.log("Flushing metrics at " + new Date(timestamp * 1000).toISOString());
+  // console.log("Flushing metrics at " + new Date(timestamp * 1000).toISOString());
 
   var counters = metrics.counters;
   var gauges = metrics.gauges;
